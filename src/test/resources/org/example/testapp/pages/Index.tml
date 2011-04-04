@@ -1,0 +1,16 @@
+<html xmlns:t="http://tapestry.apache.org/schema/tapestry_5_1_0.xsd">
+<head>
+    <title>Start Page</title>
+</head>
+<body>
+<h2>Test application for Tapestry Monitoring integration tests</h2>
+<ul>
+    <t:loop t:id="loop" t:source="names" value="name">
+        <li>${name}</li>
+    </t:loop>
+</ul>
+
+<t:eventlink event="monitoredEvent"><span id="monitored">Link</span></t:eventlink>
+
+</body>
+</html>
