@@ -43,9 +43,4 @@ public @interface Monitor {
      * @return the name
      */
     String value() default "";
-
-    /**
-     * @return The JMX Object name.
-     */
-    String jmxObjectName() default "";
 }
