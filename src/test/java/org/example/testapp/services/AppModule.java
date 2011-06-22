@@ -14,13 +14,16 @@
 
 package org.example.testapp.services;
 
-import org.apache.tapestry5.ioc.*;
+import org.apache.tapestry5.ioc.MappedConfiguration;
+import org.apache.tapestry5.ioc.ServiceBinder;
+import org.apache.tapestry5.ioc.ServiceBuilder;
+import org.apache.tapestry5.ioc.ServiceResources;
 import org.apache.tapestry5.ioc.annotations.Contribute;
-import org.apache.tapestry5.ioc.annotations.Match;
 import org.apache.tapestry5.ioc.annotations.SubModule;
-import org.apache.tapestry5.monitor.MonitorAdviser;
 import org.apache.tapestry5.monitor.MonitorModule;
 import org.apache.tapestry5.monitor.MonitorNameGenerator;
+import org.example.testapp.services.impl.HelloServiceImpl;
+import org.example.testapp.services.impl.SubMonitoredImpl;
 import org.slf4j.Logger;
 
 import javax.management.MalformedObjectNameException;
@@ -29,6 +32,7 @@ import java.lang.reflect.Method;
 
 @SubModule(MonitorModule.class)
 public class AppModule {
+
     public static void bind(ServiceBinder binder) {
         binder.bind(HelloService.class, HelloServiceImpl.class);
         binder.bind(SubMonitored.class, SubMonitoredImpl.class);
@@ -46,12 +50,6 @@ public class AppModule {
                 };
             }
         }).withId("One");
-    }
-
-    @Match("(HelloService|Renamed|One|Two|SubMonitored)")
-    public static void adviseForMonitoredServices(MethodAdviceReceiver receiver,
-                                                  MonitorAdviser monitorAdviser) {
-        monitorAdviser.monitor(receiver);
     }
 
     public static Renamed buildTwo(final Logger logger) {
