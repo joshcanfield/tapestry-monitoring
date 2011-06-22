@@ -1,4 +1,6 @@
-package org.example.testapp.services;
+package org.example.testapp.services.impl;
+
+import org.example.testapp.services.SubMonitored;
 
 /**
  * User: josh_canfield
