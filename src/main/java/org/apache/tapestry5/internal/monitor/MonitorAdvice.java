@@ -14,10 +14,8 @@
 
 package org.apache.tapestry5.internal.monitor;
 
-import org.apache.tapestry5.ioc.Invocation;
-import org.apache.tapestry5.ioc.MethodAdvice;
-import org.apache.tapestry5.services.ComponentMethodAdvice;
-import org.apache.tapestry5.services.ComponentMethodInvocation;
+import org.apache.tapestry5.plastic.MethodAdvice;
+import org.apache.tapestry5.plastic.MethodInvocation;
 import org.javasimon.Split;
 import org.javasimon.Stopwatch;
 
@@ -25,28 +23,14 @@ import org.javasimon.Stopwatch;
  * MonitorAdvice is used to advise both Service and Component methods. A MonitorAdvice instance is created
  * for each method being monitored.
  */
-public class MonitorAdvice implements MethodAdvice, ComponentMethodAdvice {
+public class MonitorAdvice implements MethodAdvice {
     private Stopwatch stopwatch;
 
     public MonitorAdvice(Stopwatch stopwatch) {
         this.stopwatch = stopwatch;
     }
 
-    /**
-     * @see MethodAdvice
-     */
-    public void advise(final Invocation invocation) {
-        run(invocation);
-    }
-
-    /**
-     * @see ComponentMethodAdvice
-     */
-    public void advise(final ComponentMethodInvocation invocation) {
-        run(invocation);
-    }
-
-    public void run(final Invocation invocation) {
+    public void run(final MethodInvocation invocation) {
         Split split = stopwatch.start();
         try {
             invocation.proceed();
@@ -55,5 +39,7 @@ public class MonitorAdvice implements MethodAdvice, ComponentMethodAdvice {
         }
     }
 
-
+    public void advise(MethodInvocation invocation) {
+        run(invocation);
+    }
 }

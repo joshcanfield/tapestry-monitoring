@@ -16,7 +16,7 @@ package org.apache.tapestry5.monitor;
 
 import org.apache.tapestry5.ioc.MethodAdviceReceiver;
 import org.apache.tapestry5.ioc.annotations.PreventServiceDecoration;
-import org.apache.tapestry5.services.ClassTransformation;
+import org.apache.tapestry5.plastic.PlasticClass;
 
 /**
  * The monitor adviser does all the work required to
@@ -26,5 +26,5 @@ public interface MonitorAdviser {
 
     void monitor(MethodAdviceReceiver receiver);
 
-    void monitor(ClassTransformation transformation);
+    void monitor(PlasticClass plasticClass);
 }

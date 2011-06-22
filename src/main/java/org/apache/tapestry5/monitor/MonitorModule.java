@@ -16,17 +16,16 @@ package org.apache.tapestry5.monitor;
 import org.apache.tapestry5.internal.monitor.MonitorAdviserImpl;
 import org.apache.tapestry5.internal.monitor.MonitorNameGeneratorImpl;
 import org.apache.tapestry5.ioc.MappedConfiguration;
-import org.apache.tapestry5.ioc.MethodAdviceReceiver;
 import org.apache.tapestry5.ioc.OrderedConfiguration;
 import org.apache.tapestry5.ioc.ServiceBinder;
-import org.apache.tapestry5.ioc.annotations.*;
+import org.apache.tapestry5.ioc.annotations.Contribute;
+import org.apache.tapestry5.ioc.annotations.SubModule;
 import org.apache.tapestry5.jmx.JmxModule;
 import org.apache.tapestry5.model.MutableComponentModel;
-import org.apache.tapestry5.services.ClassTransformation;
-import org.apache.tapestry5.services.ComponentClassTransformWorker;
+import org.apache.tapestry5.plastic.PlasticClass;
 import org.apache.tapestry5.services.TapestryModule;
-
-import javax.inject.Named;
+import org.apache.tapestry5.services.transform.ComponentClassTransformWorker2;
+import org.apache.tapestry5.services.transform.TransformationSupport;
 
 /**
  * Module for javasimon (http://code.google.com/p/javasimon/)
@@ -41,15 +40,13 @@ public class MonitorModule {
         binder.bind(MonitorNameGenerator.class, MonitorNameGeneratorImpl.class);
     }
 
-    @Contribute(ComponentClassTransformWorker.class)
-    public static void addMonitorWorker(OrderedConfiguration<ComponentClassTransformWorker> configuration, final MonitorAdviser monitorAdviser) {
+    @Contribute(ComponentClassTransformWorker2.class)
+    public static void addMonitorWorker(OrderedConfiguration<ComponentClassTransformWorker2> configuration, final MonitorAdviser monitorAdviser) {
 
-        configuration.add("monitored", new ComponentClassTransformWorker() {
-            /**
-             * Add a monitor to each of the component methods which have the Monitor annotation.
-             */
-            public void transform(ClassTransformation transformation, MutableComponentModel model) {
-                monitorAdviser.monitor(transformation);
+        configuration.add("monitored", new ComponentClassTransformWorker2() {
+
+            public void transform(PlasticClass plasticClass, TransformationSupport support, MutableComponentModel model) {
+                monitorAdviser.monitor(plasticClass);
             }
         });
     }

@@ -21,8 +21,9 @@ import org.apache.tapestry5.ioc.internal.util.InheritanceSearch;
 import org.apache.tapestry5.jmx.MBeanSupport;
 import org.apache.tapestry5.monitor.MonitorAdviser;
 import org.apache.tapestry5.monitor.MonitorNameGenerator;
-import org.apache.tapestry5.services.ClassTransformation;
-import org.apache.tapestry5.services.TransformMethod;
+import org.apache.tapestry5.plastic.MethodParameter;
+import org.apache.tapestry5.plastic.PlasticClass;
+import org.apache.tapestry5.plastic.PlasticMethod;
 import org.javasimon.SimonManager;
 import org.javasimon.Stopwatch;
 import org.javasimon.jmx.StopwatchMXBeanFactory;
@@ -78,10 +79,10 @@ public class MonitorAdviserImpl implements MonitorAdviser {
      *
      * @param transformation to be monitored
      */
-    public void monitor(ClassTransformation transformation) {
-        final List<TransformMethod> methods = transformation.matchMethodsWithAnnotation(Monitor.class);
+    public void monitor(PlasticClass transformation) {
+        final List<PlasticMethod> methods = transformation.getMethodsWithAnnotation(Monitor.class);
 
-        for (TransformMethod monitoredMethod : methods) {
+        for (PlasticMethod monitoredMethod : methods) {
             final Class<?> aClass;
             try {
                 aClass = Class.forName(transformation.getClassName());
@@ -92,14 +93,16 @@ public class MonitorAdviserImpl implements MonitorAdviser {
 
             METHODS:
             for (Method m : aClass.getDeclaredMethods()) {
-                if (!m.getName().equals(monitoredMethod.getName())) continue; // move on to the next possible match
+                if (!m.getName().equals(monitoredMethod.getDescription().methodName))
+                    continue; // move on to the next possible match
 
                 final Class<?>[] types = m.getParameterTypes();
-                final String[] typeNames = monitoredMethod.getSignature().getParameterTypes();
-                if (types.length != typeNames.length) continue; // move on to the next possible match
+                final List<MethodParameter> typeNames = monitoredMethod.getParameters();
 
-                for (int i = 0, typeNamesLength = typeNames.length; i < typeNamesLength; i++) {
-                    if (!types[i].getName().equals(typeNames[i]))
+                if (types.length != typeNames.size()) continue; // move on to the next possible match
+
+                for (int i = 0, typeNamesLength = typeNames.size(); i < typeNamesLength; i++) {
+                    if (!types[i].getName().equals(typeNames.get(i).getType()))
                         continue METHODS; // move on to the next possible match
                 }
                 // we have our method!
