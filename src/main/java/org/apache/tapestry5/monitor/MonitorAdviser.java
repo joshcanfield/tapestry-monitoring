@@ -21,7 +21,6 @@ import org.apache.tapestry5.plastic.PlasticClass;
 /**
  * The monitor adviser does all the work required to
  */
-@PreventServiceDecoration // Seems like cheating...
 public interface MonitorAdviser {
 
     void monitor(MethodAdviceReceiver receiver);
