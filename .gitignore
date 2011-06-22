@@ -1,3 +1,6 @@
 .svn
 /target
 *.iml
+*.swp
+*.ipr
+*.iws
