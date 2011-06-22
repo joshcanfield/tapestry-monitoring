@@ -8,6 +8,7 @@ import org.apache.tapestry5.ioc.internal.util.TapestryException;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 import java.lang.reflect.Method;
+import java.util.Hashtable;
 
 /**
  * Provide a service override to replace the default behavior.
@@ -52,36 +53,40 @@ public class DefaultMonitorNameGenerator implements MonitorNameGenerator {
      * <p/>
      * Given a method with the signature "org.example.tapestry.pages.Index#onActivate(String, Integer)"
      * Where the apps base package is "org.example.tapestry"
-     * This method creates an object name "org.example.tapestry:name=pages.Index,method=onActivate(String, Integer)"
+     * This method creates an object name "org.example.tapestry:name=Index,type=page,method=onActivate(String, Integer)"
      *
      * @param method being monitored, or null if transformation is provided.
      * @return the object name
      */
     // @Override - not until Java 6
     public ObjectName getJmxObjectName(Class owningClass, Method method) {
-        final Monitor monitor = method.getAnnotation(Monitor.class);
-        if (!monitor.jmxObjectName().equals("")) return asObjectName(monitor.jmxObjectName());
+        final Hashtable<String, String> properties = new Hashtable<String, String>();
 
-        final String className = owningClass.getCanonicalName();
-        if (!className.startsWith(appPackage)) {
-            String monitorName = getMonitorName(owningClass, method);
-            return asObjectName(monitorName + ":type=Monitor");
+        String domain = owningClass.getPackage().getName();
+        if (domain.startsWith(appPackage)) {
+            String type = domain.substring(appPackage.length() + 1);
+            domain = appPackage;
+            properties.put("package", type);
         }
 
-        final int lastDot = className.lastIndexOf('.');
-        final String pkg = className.substring(appPackage.length() + 1, lastDot);
-        final String cls = className.substring(lastDot + 1);
-        // can't use , in the ObjectName
-        final String methodName = getMediumDescription(method).replace(',', ';');
+        final String methodDescription = getMediumDescription(method);
 
-        return asObjectName(appPackage + ":package=" + pkg + ",class=" + cls + ",method=" + methodName + ",type=Monitor");
+        properties.put("class", owningClass.getSimpleName());
+        properties.put("method", ObjectName.quote(methodDescription));
+        properties.put("type", "Monitor");
+
+        return objectName(domain, properties);
     }
 
-    private ObjectName asObjectName(String s) {
+    private ObjectName objectName(String domain, Hashtable<String, String> attributes) {
         try {
-            return new ObjectName(s);
+            return new ObjectName(domain, attributes);
         } catch (MalformedObjectNameException e) {
-            throw new TapestryException("Failed creating JMX object name", e);
+            final String message = String.format(
+                    "Failed creating JMX object name domain='%s' attributes='%s'",
+                    domain, attributes
+            );
+            throw new TapestryException(message, e);
         }
     }
 
