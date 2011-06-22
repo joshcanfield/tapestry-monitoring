@@ -16,9 +16,12 @@ package org.apache.tapestry5.monitor;
 import org.apache.tapestry5.internal.monitor.MonitorAdviserImpl;
 import org.apache.tapestry5.internal.monitor.MonitorNameGeneratorImpl;
 import org.apache.tapestry5.ioc.MappedConfiguration;
+import org.apache.tapestry5.ioc.MethodAdviceReceiver;
 import org.apache.tapestry5.ioc.OrderedConfiguration;
 import org.apache.tapestry5.ioc.ServiceBinder;
 import org.apache.tapestry5.ioc.annotations.Contribute;
+import org.apache.tapestry5.ioc.annotations.Local;
+import org.apache.tapestry5.ioc.annotations.Match;
 import org.apache.tapestry5.ioc.annotations.SubModule;
 import org.apache.tapestry5.jmx.JmxModule;
 import org.apache.tapestry5.model.MutableComponentModel;
@@ -40,8 +43,27 @@ public class MonitorModule {
         binder.bind(MonitorNameGenerator.class, MonitorNameGeneratorImpl.class);
     }
 
+    /**
+     * The @Local on MonitorAdviser prevents prevents it from going to the MasterObjectProvider and causing a
+     * recursive service dependency. The @Match criteria prevents MonitorAdviser from trying to advise itself.
+     *
+     * @param receiver       -
+     * @param monitorAdviser -
+     */
+    @Match("^(?!MonitorAdviser).*")
+    public static void adviseForMonitoredServices(
+            MethodAdviceReceiver receiver,
+            @Local MonitorAdviser monitorAdviser
+    ) {
+        monitorAdviser.monitor(receiver);
+    }
+
+
     @Contribute(ComponentClassTransformWorker2.class)
-    public static void addMonitorWorker(OrderedConfiguration<ComponentClassTransformWorker2> configuration, final MonitorAdviser monitorAdviser) {
+    public static void addMonitorWorker(
+            OrderedConfiguration<ComponentClassTransformWorker2> configuration,
+            @Local final MonitorAdviser monitorAdviser
+    ) {
 
         configuration.add("monitored", new ComponentClassTransformWorker2() {
 
@@ -52,7 +74,9 @@ public class MonitorModule {
     }
 
     @Contribute(MonitorNameGenerator.class)
-    public static void configureDefaultNameGenerator(MappedConfiguration<Class, MonitorNameGenerator> configuration) {
+    public static void provideDefaultNameGenerator(
+            MappedConfiguration<Class, MonitorNameGenerator> configuration
+    ) {
         configuration.addInstance(Object.class, DefaultMonitorNameGenerator.class);
     }
 
