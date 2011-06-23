@@ -33,7 +33,7 @@ public class DefaultMonitorNameGenerator implements MonitorNameGenerator {
     public String getMonitorName(Class owningClass, Method method) {
         Monitor monitor = method.getAnnotation(Monitor.class);
 
-        // Monitors may come from annotation or symbol matches
+        // Monitors may come from annotation (TODO or symbol matches)
         if (monitor != null && !"".equals(monitor.value())) {
             return monitor.value();
         }
@@ -61,31 +61,37 @@ public class DefaultMonitorNameGenerator implements MonitorNameGenerator {
     // @Override - not until Java 6
     public ObjectName getJmxObjectName(Class owningClass, Method method) {
         final Hashtable<String, String> properties = new Hashtable<String, String>();
-
+        StringBuilder builder = new StringBuilder();
         String domain = owningClass.getPackage().getName();
         if (domain.startsWith(appPackage)) {
-            String type = domain.substring(appPackage.length() + 1);
-            domain = appPackage;
-            properties.put("package", type);
+            String pkg = domain.substring(appPackage.length() + 1);
+            builder.append(appPackage).append(':');
+            builder.append("package=").append(pkg).append(',');
+        } else {
+            builder.append(domain).append(':');
         }
 
-        final String methodDescription = getMediumDescription(method);
+        builder.append("name=").append(owningClass.getSimpleName()).append(',');
 
-        properties.put("class", owningClass.getSimpleName());
-        properties.put("method", ObjectName.quote(methodDescription));
-        properties.put("type", "Monitor");
+        final Monitor monitor = method.getAnnotation(Monitor.class);
+        String desc;
+        if (monitor != null && !"".equals(monitor.value())) {
+            desc = monitor.value();
+        } else {
+            desc = getMediumDescription(method);
+        }
+        builder.append("monitor=").append(ObjectName.quote(desc)).append(',');
 
-        return objectName(domain, properties);
+        builder.append("type=Monitor");
+
+        return objectName(builder.toString());
     }
 
-    private ObjectName objectName(String domain, Hashtable<String, String> attributes) {
+    private ObjectName objectName(String name) {
         try {
-            return new ObjectName(domain, attributes);
+            return new ObjectName(name);
         } catch (MalformedObjectNameException e) {
-            final String message = String.format(
-                    "Failed creating JMX object name domain='%s' attributes='%s'",
-                    domain, attributes
-            );
+            final String message = String.format("Failed creating JMX object name '%s''", name);
             throw new TapestryException(message, e);
         }
     }
