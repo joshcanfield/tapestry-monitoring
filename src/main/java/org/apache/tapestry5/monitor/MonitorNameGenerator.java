@@ -14,8 +14,6 @@
 
 package org.apache.tapestry5.monitor;
 
-import org.apache.tapestry5.ioc.annotations.PreventServiceDecoration;
-
 import javax.management.ObjectName;
 import java.lang.reflect.Method;
 
@@ -25,7 +23,6 @@ import java.lang.reflect.Method;
  * An exception will be thrown when building the monitor if the name does not match the regular expression: /[-_\[\]A-Za-z0-9.,@$%()<>]+/
  * If two or more methods share the same name then they will share the same counter.
  */
-@PreventServiceDecoration
 public interface MonitorNameGenerator {
 
     /**

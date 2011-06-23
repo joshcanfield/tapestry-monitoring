@@ -16,7 +16,6 @@ package org.apache.tapestry5.internal.monitor;
 
 import org.apache.tapestry5.annotations.Monitor;
 import org.apache.tapestry5.ioc.MethodAdviceReceiver;
-import org.apache.tapestry5.ioc.annotations.PreventServiceDecoration;
 import org.apache.tapestry5.ioc.internal.util.InheritanceSearch;
 import org.apache.tapestry5.jmx.MBeanSupport;
 import org.apache.tapestry5.monitor.MonitorAdviser;
@@ -37,7 +36,6 @@ import java.util.List;
 /**
  *
  */
-@PreventServiceDecoration // decorators don't get decorated... s/decorator/adviser/g
 public class MonitorAdviserImpl implements MonitorAdviser {
     private final Logger logger;
     private final MonitorNameGenerator monitorNameGenerator;
