@@ -10,7 +10,7 @@ version = '5.3.0-SNAPSHOT'
 group = 'org.apache.tapestry'
 jar.baseName = 'tapestry-monitor'
 
-tapestryVersion = '5.3.0-SNAPSHOT'
+tapestryVersion = '5.3.0'
 javaSimonVersion = '2.3.0'
 
 ideaProject {
@@ -27,6 +27,15 @@ ideaModule {
   }
 }
 
+task packageSources(type: Jar) {
+  from sourceSets.main.allSource
+  classifier = 'sources'
+}
+
+artifacts {
+  archives packageSources
+}
+
 dependencies {
 
   compile 'javax.servlet:servlet-api:2.5'
@@ -37,7 +46,7 @@ dependencies {
   }
 
   compile "org.javasimon:javasimon-core:$javaSimonVersion",
-	  "org.javasimon:javasimon-jmx:$javaSimonVersion"
+          "org.javasimon:javasimon-jmx:$javaSimonVersion"
 
   compile "org.apache.tapestry:tapestry-jmx:$tapestryVersion"
 
