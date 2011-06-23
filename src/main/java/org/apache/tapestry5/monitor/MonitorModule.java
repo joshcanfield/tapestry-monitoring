@@ -15,20 +15,18 @@ package org.apache.tapestry5.monitor;
 
 import org.apache.tapestry5.internal.monitor.MonitorAdviserImpl;
 import org.apache.tapestry5.internal.monitor.MonitorNameGeneratorImpl;
-import org.apache.tapestry5.ioc.MappedConfiguration;
 import org.apache.tapestry5.ioc.MethodAdviceReceiver;
 import org.apache.tapestry5.ioc.OrderedConfiguration;
 import org.apache.tapestry5.ioc.ServiceBinder;
-import org.apache.tapestry5.ioc.annotations.Contribute;
-import org.apache.tapestry5.ioc.annotations.Local;
-import org.apache.tapestry5.ioc.annotations.Match;
-import org.apache.tapestry5.ioc.annotations.SubModule;
+import org.apache.tapestry5.ioc.annotations.*;
 import org.apache.tapestry5.jmx.JmxModule;
 import org.apache.tapestry5.model.MutableComponentModel;
 import org.apache.tapestry5.plastic.PlasticClass;
 import org.apache.tapestry5.services.TapestryModule;
 import org.apache.tapestry5.services.transform.ComponentClassTransformWorker2;
 import org.apache.tapestry5.services.transform.TransformationSupport;
+
+import java.util.Map;
 
 /**
  * Module for javasimon (http://code.google.com/p/javasimon/)
@@ -42,6 +40,14 @@ public class MonitorModule {
         binder.bind(MonitorAdviser.class, MonitorAdviserImpl.class);
         binder.bind(MonitorNameGenerator.class, MonitorNameGeneratorImpl.class);
     }
+
+//    public static MonitorNameGenerator buildMonitorNameGenerator(
+//            Map<Class, MonitorNameGenerator> source,
+//            @Autobuild
+//            DefaultMonitorNameGenerator defaultMonitorNameGenerator
+//    ) {
+//        return new MonitorNameGeneratorImpl(source, defaultMonitorNameGenerator);
+//    }
 
     /**
      * The @Local on MonitorAdviser prevents prevents it from going to the MasterObjectProvider and causing a
@@ -72,13 +78,5 @@ public class MonitorModule {
             }
         });
     }
-
-    @Contribute(MonitorNameGenerator.class)
-    public static void provideDefaultNameGenerator(
-            MappedConfiguration<Class, MonitorNameGenerator> configuration
-    ) {
-        configuration.addInstance(Object.class, DefaultMonitorNameGenerator.class);
-    }
-
 
 }
