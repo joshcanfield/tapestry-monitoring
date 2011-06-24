@@ -102,7 +102,7 @@ Example
 And VisualVM will show
 
 * app
-    * org.example.testapp
+    * org.example.testapp.Index
         * onActivate
         * onUpdateZone
 
