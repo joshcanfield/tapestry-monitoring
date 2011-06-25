@@ -17,8 +17,7 @@
     <test name="Tapestry Monitoring Library Tests">
         <!--
         <classes>
-            <class name="org.apache.tapestry5.monitor.integration.TapestryMonitorIntegrationTests">
-                <methods>
+            <class name="org.apache.tapestry5.monitor.integration.MonitorTests<methods>
                     <include name="monitor_name_generator"/>
                     <include name="monitor_name_generator_for_extended_interface"/>
                     <include name="monitor_name_second_implementation"/>

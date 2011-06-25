@@ -37,7 +37,7 @@ import java.lang.reflect.Method;
 import java.util.Collection;
 
 @Test
-public class TapestryMonitorIntegrationTests extends Assert {
+public class MonitorTests extends Assert {
 
     private PageTester tester;
     private MonitorNameGenerator monitorNameGenerator;
@@ -158,6 +158,18 @@ public class TapestryMonitorIntegrationTests extends Assert {
 
         service.callsMonitoredMethod();
         assertEquals(profiledStopWatch.getCounter(), 0);
+    }
+
+    @Test
+    public void monitor_injected_service() throws NoSuchMethodException {
+        final Method monitoredMethod = HelloService.class.getMethod("monitoredMethod");
+        final Stopwatch stopwatch = getStopwatch(HelloService.class, monitoredMethod);
+
+        SubMonitored service = tester.getRegistry().getService(SubMonitored.class);
+
+        service.callsHelloServiceMonitoredMethod();
+
+        assertEquals(stopwatch.getCounter(), 1);
     }
 
     @Test

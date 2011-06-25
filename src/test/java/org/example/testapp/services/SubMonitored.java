@@ -5,4 +5,5 @@ package org.example.testapp.services;
  * Date: 2/15/11
  */
 public interface SubMonitored extends Renamed {
+    public void callsHelloServiceMonitoredMethod();
 }
