@@ -41,14 +41,6 @@ public class MonitorModule {
         binder.bind(MonitorNameGenerator.class, MonitorNameGeneratorImpl.class);
     }
 
-//    public static MonitorNameGenerator buildMonitorNameGenerator(
-//            Map<Class, MonitorNameGenerator> source,
-//            @Autobuild
-//            DefaultMonitorNameGenerator defaultMonitorNameGenerator
-//    ) {
-//        return new MonitorNameGeneratorImpl(source, defaultMonitorNameGenerator);
-//    }
-
     /**
      * The @Local on MonitorAdviser prevents prevents it from going to the MasterObjectProvider and causing a
      * recursive service dependency. The @Match criteria prevents MonitorAdviser from trying to advise itself.
