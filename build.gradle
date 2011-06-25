@@ -40,10 +40,7 @@ dependencies {
 
   compile 'javax.servlet:servlet-api:2.5'
 
-  compile("org.apache.tapestry:tapestry-core:$tapestryVersion") {
-    exclude module: 'slf4j-log4j12'
-    exclude module: 'log4j'
-  }
+  compile "org.apache.tapestry:tapestry-core:$tapestryVersion"
 
   compile "org.javasimon:javasimon-core:$javaSimonVersion"
   compile("org.javasimon:javasimon-jmx:$javaSimonVersion") {
@@ -53,9 +50,7 @@ dependencies {
   compile "org.apache.tapestry:tapestry-jmx:$tapestryVersion"
 
   compile 'org.slf4j:slf4j-api:1.6.1',
-          'org.slf4j:log4j-over-slf4j:1.6.1',
-          'ch.qos.logback:logback-core:0.9.26',
-          'ch.qos.logback:logback-classic:0.9.26'
+          'org.slf4j:log4j-over-slf4j:1.6.1'
 
   testCompile 'org.testng:testng:5.12.1',
           'org.easymock:easymock:2.5.2',
