@@ -114,13 +114,11 @@ public class MonitorAdviserImpl implements MonitorAdviser {
     }
 
     private Stopwatch createStopwatch(Class<?> owningClass, Method method) {
-        // need to choose which monitorNameGenerator I'm going to use.
         final String name = monitorNameGenerator.getMonitorName(owningClass, method);
 
         final ObjectName objectName = monitorNameGenerator.getJmxObjectName(owningClass, method);
 
         final Stopwatch stopwatch = SimonManager.getStopwatch(name);
-
         mBeanSupport.register(StopwatchMXBeanFactory.create(stopwatch), objectName);
 
         return stopwatch;
