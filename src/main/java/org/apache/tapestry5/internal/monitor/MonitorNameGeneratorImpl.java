@@ -1,5 +1,6 @@
 package org.apache.tapestry5.internal.monitor;
 
+import org.apache.tapestry5.annotations.Monitor;
 import org.apache.tapestry5.ioc.annotations.Autobuild;
 import org.apache.tapestry5.ioc.util.StrategyRegistry;
 import org.apache.tapestry5.monitor.DefaultMonitorNameGenerator;
@@ -26,12 +27,12 @@ public class MonitorNameGeneratorImpl implements MonitorNameGenerator {
         strategyRegistry = StrategyRegistry.newInstance(MonitorNameGenerator.class, source, true);
     }
 
-    public String getMonitorName(Class owningClass, Method method) {
-        return getNameGenerator(owningClass).getMonitorName(owningClass, method);
+    public String getMonitorName(Monitor monitor, Class owningClass, Method method) {
+        return getNameGenerator(owningClass).getMonitorName(monitor, owningClass, method);
     }
 
-    public ObjectName getJmxObjectName(Class owningClass, Method method) {
-        return getNameGenerator(owningClass).getJmxObjectName(owningClass, method);
+    public ObjectName getJmxObjectName(Monitor monitor, Class owningClass, Method method) {
+        return getNameGenerator(owningClass).getJmxObjectName(monitor, owningClass, method);
     }
 
     private MonitorNameGenerator getNameGenerator(Class owningClass) {

@@ -14,6 +14,7 @@
 
 package org.example.testapp.services;
 
+import org.apache.tapestry5.annotations.Monitor;
 import org.apache.tapestry5.ioc.MappedConfiguration;
 import org.apache.tapestry5.ioc.ServiceBinder;
 import org.apache.tapestry5.ioc.ServiceBuilder;
@@ -23,6 +24,7 @@ import org.apache.tapestry5.ioc.annotations.SubModule;
 import org.apache.tapestry5.monitor.MonitorModule;
 import org.apache.tapestry5.monitor.MonitorNameGenerator;
 import org.example.testapp.services.impl.HelloServiceImpl;
+import org.example.testapp.services.impl.NotMonitoredImpl;
 import org.example.testapp.services.impl.SubMonitoredImpl;
 import org.slf4j.Logger;
 
@@ -36,6 +38,7 @@ public class AppModule {
     public static void bind(ServiceBinder binder) {
         binder.bind(HelloService.class, HelloServiceImpl.class);
         binder.bind(SubMonitored.class, SubMonitoredImpl.class);
+        binder.bind(NotMonitored.class, NotMonitoredImpl.class);
 
         binder.bind(Renamed.class, new ServiceBuilder<Renamed>() {
             public Renamed buildService(final ServiceResources resources) {
@@ -97,11 +100,11 @@ public class AppModule {
             this.name = name;
         }
 
-        public String getMonitorName(Class owningClass, Method method) {
+        public String getMonitorName(Monitor monitor, Class owningClass, Method method) {
             return this.name + "_Renamed_Service";
         }
 
-        public ObjectName getJmxObjectName(Class owningClass, Method method) {
+        public ObjectName getJmxObjectName(Monitor monitor, Class owningClass, Method method) {
             try {
                 return new ObjectName(this.name + "_Renamed_Service:type=hello");
             } catch (MalformedObjectNameException e) {

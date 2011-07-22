@@ -15,14 +15,17 @@
 package org.apache.tapestry5.monitor.integration;
 
 import org.apache.tapestry5.EventContext;
+import org.apache.tapestry5.annotations.Monitor;
 import org.apache.tapestry5.dom.Document;
 import org.apache.tapestry5.dom.Element;
 import org.apache.tapestry5.monitor.MonitorNameGenerator;
 import org.apache.tapestry5.test.PageTester;
 import org.example.testapp.pages.Index;
 import org.example.testapp.services.HelloService;
+import org.example.testapp.services.NotMonitored;
 import org.example.testapp.services.Renamed;
 import org.example.testapp.services.SubMonitored;
+import org.example.testapp.services.impl.NotMonitoredImpl;
 import org.javasimon.SimonManager;
 import org.javasimon.Stopwatch;
 import org.testng.Assert;
@@ -63,9 +66,9 @@ public class MonitorTests extends Assert {
         final Method getNamesMethod = Index.class.getDeclaredMethod("getNames");
         final Method getNameMethod = Index.class.getDeclaredMethod("getName");
 
-        final Stopwatch onActivateStopwatch = getStopwatch(Index.class, onActivateMethod);
-        final Stopwatch getNamesStopwatch = getStopwatch(Index.class, getNamesMethod);
-        final Stopwatch getNameStopwatch = getStopwatch(Index.class, getNameMethod);
+        final Stopwatch onActivateStopwatch = getStopwatch(monitor(onActivateMethod), Index.class, onActivateMethod);
+        final Stopwatch getNamesStopwatch = getStopwatch(monitor(getNamesMethod), Index.class, getNamesMethod);
+        final Stopwatch getNameStopwatch = getStopwatch(monitor(getNameMethod), Index.class, getNameMethod);
 
         assertEquals(onActivateStopwatch.getCounter(), 0);
         assertEquals(getNamesStopwatch.getCounter(), 0);
@@ -87,8 +90,8 @@ public class MonitorTests extends Assert {
 
     @Test
     public void monitor_page_event_methods() throws NoSuchMethodException {
-        final Method onMonitoredEvent = Index.class.getDeclaredMethod("onMonitoredEvent");
-        final Stopwatch onMonitoredEventStopwatch = getStopwatch(Index.class, onMonitoredEvent);
+        final Method method = Index.class.getDeclaredMethod("onMonitoredEvent");
+        final Stopwatch onMonitoredEventStopwatch = getStopwatch(monitor(method), Index.class, method);
 
         // Method should not have been called, no counter increment
         assertEquals(onMonitoredEventStopwatch.getCounter(), 0);
@@ -117,7 +120,9 @@ public class MonitorTests extends Assert {
 
         // Methods without the monitor annotation should not be monitored
         final Method method = HelloService.class.getMethod("notMonitoredMethod");
-        assertFalse(SimonManager.simonNames().contains(monitorNameGenerator.getMonitorName(HelloService.class, method)));
+        Monitor monitor = method.getAnnotation(Monitor.class);
+        String monitorName = monitorNameGenerator.getMonitorName(monitor, HelloService.class, method);
+        assertFalse(SimonManager.simonNames().contains(monitorName));
 
     }
 
@@ -126,8 +131,8 @@ public class MonitorTests extends Assert {
         /**
          * Service implementations bound to an interface must respect the monitor annotation
          */
-        final Method profiledInterfaceMethod = HelloService.class.getMethod("monitoredMethod");
-        final Stopwatch profiledStopWatch = getStopwatch(HelloService.class, profiledInterfaceMethod);
+        final Method method = HelloService.class.getMethod("monitoredMethod");
+        final Stopwatch profiledStopWatch = getStopwatch(monitor(method), HelloService.class, method);
 
         // re-ordering is easier if we don't hard-code the count value...
         int count = 0;
@@ -151,8 +156,8 @@ public class MonitorTests extends Assert {
      */
     @Test
     public void monitor_indirect_methods() throws NoSuchMethodException {
-        final Method profiledInterfaceMethod = HelloService.class.getMethod("monitoredMethod");
-        final Stopwatch profiledStopWatch = getStopwatch(HelloService.class, profiledInterfaceMethod);
+        final Method method = HelloService.class.getMethod("monitoredMethod");
+        final Stopwatch profiledStopWatch = getStopwatch(monitor(method), HelloService.class, method);
 
         HelloService service = tester.getRegistry().getService(HelloService.class);
 
@@ -163,7 +168,7 @@ public class MonitorTests extends Assert {
     @Test
     public void monitor_injected_service() throws NoSuchMethodException {
         final Method monitoredMethod = HelloService.class.getMethod("monitoredMethod");
-        final Stopwatch stopwatch = getStopwatch(HelloService.class, monitoredMethod);
+        final Stopwatch stopwatch = getStopwatch(monitor(monitoredMethod), HelloService.class, monitoredMethod);
 
         SubMonitored service = tester.getRegistry().getService(SubMonitored.class);
 
@@ -179,8 +184,8 @@ public class MonitorTests extends Assert {
          */
         final Method profiledInterfaceMethod = HelloService.class.getMethod("monitoredMethod", String.class, String.class);
         final Method noparams = HelloService.class.getMethod("monitoredMethod");
-        final Stopwatch profiledStopWatch = getStopwatch(HelloService.class, profiledInterfaceMethod);
-        final Stopwatch noparamsStopWatch = getStopwatch(HelloService.class, noparams);
+        final Stopwatch profiledStopWatch = getStopwatch(monitor(profiledInterfaceMethod), HelloService.class, profiledInterfaceMethod);
+        final Stopwatch noparamsStopWatch = getStopwatch(monitor(noparams), HelloService.class, noparams);
 
         // re-ordering is easier if we don't hard-code the count value...
         int count = 0;
@@ -207,9 +212,13 @@ public class MonitorTests extends Assert {
         final Method onActivateMethod = Index.class.getDeclaredMethod("onActivate", EventContext.class);
         final Method getNamesMethod = Index.class.getDeclaredMethod("getNames");
 
-        assertMonitorRegistered(mBeanServer, HelloService.class, profiledInterfaceMethod);
-        assertMonitorRegistered(mBeanServer, Index.class, onActivateMethod);
-        assertMonitorRegistered(mBeanServer, Index.class, getNamesMethod);
+        assertMonitorRegistered(monitor(profiledInterfaceMethod), mBeanServer, HelloService.class, profiledInterfaceMethod);
+        assertMonitorRegistered(monitor(onActivateMethod), mBeanServer, Index.class, onActivateMethod);
+        assertMonitorRegistered(monitor(getNamesMethod), mBeanServer, Index.class, getNamesMethod);
+    }
+
+    private Monitor monitor(Method method) {
+        return method.getAnnotation(Monitor.class);
     }
 
     @Test
@@ -228,6 +237,20 @@ public class MonitorTests extends Assert {
         testRenamedMonitor(Renamed.class, "Two", "OneNameGenerator_Renamed_Service");
     }
 
+    @Test
+    public void monitor_implementation_class() throws NoSuchMethodException {
+        final Method method = NotMonitored.class.getMethod("methodOne");
+        final Method implMethod = NotMonitoredImpl.class.getMethod("methodOne");
+        final Stopwatch stopwatch = getStopwatch(monitor(implMethod), NotMonitored.class, method);
+
+        NotMonitored service = tester.getRegistry().getService(NotMonitored.class);
+        int count = 0;
+        assertEquals(stopwatch.getCounter(), 0);
+
+        service.methodOne();
+        assertEquals(stopwatch.getCounter(), ++count);
+    }
+
 
     private void testRenamedMonitor(Class<? extends Renamed> serviceInterface, String serviceId, String expected) throws NoSuchMethodException {
         final MonitorNameGenerator nameGenerator = tester.getService(MonitorNameGenerator.class);
@@ -240,10 +263,10 @@ public class MonitorTests extends Assert {
             service = tester.getRegistry().getService(serviceInterface);
         }
         final Method monitored = service.getClass().getMethod("monitoredMethod");
-
-        final String monitoredName = nameGenerator.getMonitorName(serviceInterface, monitored);
+        Monitor monitor = monitored.getAnnotation(Monitor.class);
+        final String monitoredName = nameGenerator.getMonitorName(monitor, serviceInterface, monitored);
         assertEquals(monitoredName, expected);
-        final Stopwatch monitoredStopwatch = getStopwatch(serviceInterface, monitored);
+        final Stopwatch monitoredStopwatch = getStopwatch(monitor, serviceInterface, monitored);
 
         assertEquals(monitoredStopwatch.getCounter(), 0);
         service.monitoredMethod();
@@ -253,13 +276,13 @@ public class MonitorTests extends Assert {
         assertEquals(monitoredStopwatch.getCounter(), 1);
     }
 
-    private void assertMonitorRegistered(MBeanServer mBeanServer, Class<?> owningClass, Method method) {
-        ObjectName objectName = monitorNameGenerator.getJmxObjectName(owningClass, method);
+    private void assertMonitorRegistered(Monitor monitor, MBeanServer mBeanServer, Class<?> owningClass, Method method) {
+        ObjectName objectName = monitorNameGenerator.getJmxObjectName(monitor, owningClass, method);
         assertTrue(mBeanServer.isRegistered(objectName), "Expected " + objectName + " to be registered.");
     }
 
-    private Stopwatch getStopwatch(Class<?> owningClass, Method method) {
-        return SimonManager.getStopwatch(monitorNameGenerator.getMonitorName(owningClass, method));
+    private Stopwatch getStopwatch(Monitor monitor, Class<?> owningClass, Method method) {
+        return SimonManager.getStopwatch(monitorNameGenerator.getMonitorName(monitor, owningClass, method));
     }
 
 

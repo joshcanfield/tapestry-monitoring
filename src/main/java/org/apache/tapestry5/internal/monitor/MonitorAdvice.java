@@ -36,6 +36,11 @@ public class MonitorAdvice implements MethodAdvice {
             invocation.proceed();
         } finally {
             split.stop();
+            /*
+             * TODO: Capture running time, stick into buckets
+             */
+
+            //split.runningFor();
         }
     }
 

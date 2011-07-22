@@ -48,4 +48,8 @@ public class HelloServiceImpl implements HelloService {
          */
         monitoredMethod();
     }
+
+    public void failsOnTrue(boolean fail) {
+        if (fail) throw new RuntimeException("Failed as requested");
+    }
 }

@@ -30,4 +30,7 @@ public interface HelloService {
     void notMonitoredMethod();
 
     void callsMonitoredMethod();
+
+    @Monitor
+    void failsOnTrue(boolean fail);
 }

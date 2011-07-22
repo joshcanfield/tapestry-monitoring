@@ -14,6 +14,8 @@
 
 package org.apache.tapestry5.monitor;
 
+import org.apache.tapestry5.annotations.Monitor;
+
 import javax.management.ObjectName;
 import java.lang.reflect.Method;
 
@@ -28,18 +30,20 @@ public interface MonitorNameGenerator {
     /**
      * Name the monitor for a service interface method.
      *
+     * @param monitor     from the method or null
      * @param owningClass of the method
      * @param method      being monitored
      * @return the name of the monitored method
      */
-    String getMonitorName(Class owningClass, Method method);
+    String getMonitorName(Monitor monitor, Class owningClass, Method method);
 
     /**
      * Get the monitor name for this service method.
      *
+     * @param monitor     from the method or null
      * @param owningClass of the method
      * @param method      being monitored
      * @return the object name
      */
-    ObjectName getJmxObjectName(Class owningClass, Method method);
+    ObjectName getJmxObjectName(Monitor monitor, Class owningClass, Method method);
 }

@@ -30,9 +30,7 @@ public class DefaultMonitorNameGenerator implements MonitorNameGenerator {
      * @return a name of the format "pages.Index.onActivate(java.lang.String)"
      */
     // @Override - not until Java 6
-    public String getMonitorName(Class owningClass, Method method) {
-        Monitor monitor = method.getAnnotation(Monitor.class);
-
+    public String getMonitorName(Monitor monitor, Class owningClass, Method method) {
         // Monitors may come from annotation (TODO or symbol matches)
         if (monitor != null && !"".equals(monitor.value())) {
             return monitor.value();
@@ -59,7 +57,7 @@ public class DefaultMonitorNameGenerator implements MonitorNameGenerator {
      * @return the object name
      */
     // @Override - not until Java 6
-    public ObjectName getJmxObjectName(Class owningClass, Method method) {
+    public ObjectName getJmxObjectName(Monitor monitor, Class owningClass, Method method) {
         final Hashtable<String, String> properties = new Hashtable<String, String>();
         StringBuilder builder = new StringBuilder();
         String domain = owningClass.getPackage().getName();
@@ -73,7 +71,6 @@ public class DefaultMonitorNameGenerator implements MonitorNameGenerator {
 
         builder.append("name=").append(owningClass.getSimpleName()).append(',');
 
-        final Monitor monitor = method.getAnnotation(Monitor.class);
         String desc;
         if (monitor != null && !"".equals(monitor.value())) {
             desc = monitor.value();

@@ -39,6 +39,7 @@ import java.util.List;
 public class MonitorAdviserImpl implements MonitorAdviser {
     private final Logger logger;
     private final MonitorNameGenerator monitorNameGenerator;
+    // TODO : Refactor into local interface
     private final MBeanSupport mBeanSupport;
 
     public MonitorAdviserImpl(
@@ -63,10 +64,10 @@ public class MonitorAdviserImpl implements MonitorAdviser {
             if (o.equals(Object.class)) continue;
             final Method[] methods = o.getDeclaredMethods();
             for (Method method : methods) {
-                final Monitor monitor = method.getAnnotation(Monitor.class);
+                final Monitor monitor = receiver.getMethodAnnotation(method, Monitor.class);
                 if (monitor == null) continue;
-
-                final Stopwatch stopwatch = createStopwatch(owningClass, method);
+                logger.trace("Monitoring method: {}.{}", owningClass.getSimpleName(), method.getName());
+                final Stopwatch stopwatch = createStopwatch(monitor, owningClass, method);
                 receiver.adviseMethod(method, new MonitorAdvice(stopwatch));
             }
         }
@@ -108,15 +109,18 @@ public class MonitorAdviserImpl implements MonitorAdviser {
                 break;
             }
 
-            final Stopwatch stopwatch = createStopwatch(aClass, method);
-            monitoredMethod.addAdvice(new MonitorAdvice(stopwatch));
+            if (method != null) {
+                logger.trace("Monitoring method: {}.{}", aClass.getSimpleName(), method.getName());
+                final Stopwatch stopwatch = createStopwatch(method.getAnnotation(Monitor.class), aClass, method);
+                monitoredMethod.addAdvice(new MonitorAdvice(stopwatch));
+            }
         }
     }
 
-    private Stopwatch createStopwatch(Class<?> owningClass, Method method) {
-        final String name = monitorNameGenerator.getMonitorName(owningClass, method);
+    private Stopwatch createStopwatch(Monitor monitor, Class<?> owningClass, Method method) {
+        final String name = monitorNameGenerator.getMonitorName(monitor, owningClass, method);
 
-        final ObjectName objectName = monitorNameGenerator.getJmxObjectName(owningClass, method);
+        final ObjectName objectName = monitorNameGenerator.getJmxObjectName(monitor, owningClass, method);
 
         final Stopwatch stopwatch = SimonManager.getStopwatch(name);
         mBeanSupport.register(StopwatchMXBeanFactory.create(stopwatch), objectName);
