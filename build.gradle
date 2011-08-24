@@ -10,7 +10,7 @@ version = '5.3.0-SNAPSHOT'
 group = 'org.apache.tapestry'
 jar.baseName = 'tapestry-monitor'
 
-tapestryVersion = '5.3.0'
+tapestryVersion = '5.3-alpha-13'
 javaSimonVersion = '2.5.0'
 
 ideaProject {
@@ -60,8 +60,8 @@ dependencies {
 
 repositories {
   mavenCentral();
-  mavenRepo name: 'apache-snapshots',
-          urls: "http://repository.apache.org/snapshots"
+  mavenRepo name: 'apache-staging',
+                  urls: "https://repository.apache.org/content/repositories/staging/"
   mavenRepo name: 'jboss',
           urls: "https://repository.jboss.org/nexus/content/groups/public-jboss"
   mavenRepo name: 'java.net',

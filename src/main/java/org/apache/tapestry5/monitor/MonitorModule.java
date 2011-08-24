@@ -58,6 +58,7 @@ public class MonitorModule {
 
 
     @Contribute(ComponentClassTransformWorker2.class)
+    @Primary
     public static void addMonitorWorker(
             OrderedConfiguration<ComponentClassTransformWorker2> configuration,
             @Local final MonitorAdviser monitorAdviser
