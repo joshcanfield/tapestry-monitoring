@@ -5,17 +5,17 @@ apply plugin: 'maven'
 
 description = 'Provides support for performance monitoring.'
 defaultTasks 'clean', 'build'
-sourceCompatibility = JavaVersion.VERSION_1_5
+sourceCompatibility = JavaVersion.VERSION_1_6
 version = '5.3.0-SNAPSHOT'
 group = 'org.apache.tapestry'
 jar.baseName = 'tapestry-monitor'
 
-tapestryVersion = '5.3-alpha-13'
-javaSimonVersion = '2.5.0'
+tapestryVersion = '5.3.1'
+javaSimonVersion = '3.0.0'
 
 ideaProject {
   // Not sure why this is required, it's supposed to inherit from sourceCompatibility but doesn't seem to.
-  javaVersion = 1.5
+  javaVersion = 1.6
   beforeConfigured { project ->
     project.modulePaths.clear()
   }
@@ -43,9 +43,6 @@ dependencies {
   compile "org.apache.tapestry:tapestry-core:$tapestryVersion"
 
   compile "org.javasimon:javasimon-core:$javaSimonVersion"
-  compile("org.javasimon:javasimon-jmx:$javaSimonVersion") {
-    exclude module: 'javasimon-jdbc3'
-  }
 
   compile "org.apache.tapestry:tapestry-jmx:$tapestryVersion"
 
