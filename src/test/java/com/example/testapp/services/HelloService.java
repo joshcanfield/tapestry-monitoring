@@ -12,20 +12,25 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.javasimon.jmx;
+package com.example.testapp.services;
 
-import org.javasimon.Stopwatch;
+
+import com.joshcanfield.tapestry5.annotations.Monitor;
 
 /**
- * Factory class for the Stopwatch MXBeans.
- * <p/>
- * While javasimon comes with a mxbean generating callback it does not offer the naming freedom that I'd like for tapestry.
- * The StopwatchMXBean implementation has a protected constructor so we need a class that lives in the same package
- * in order to build them. The javasimon dev has suggested that the next version will be more flexible.
  */
-public class StopwatchMXBeanFactory {
+public interface HelloService {
 
-    public static StopwatchMXBean create(Stopwatch stopwatch) {
-        return new StopwatchMXBeanImpl(stopwatch);
-    }
+    @Monitor
+    void monitoredMethod();
+
+    @Monitor
+    void monitoredMethod(String str, String str1);
+
+    void notMonitoredMethod();
+
+    void callsMonitoredMethod();
+
+    @Monitor
+    void failsOnTrue(boolean fail);
 }

@@ -3,7 +3,7 @@
         Copyright 2010 The Apache Software Foundation Licensed under the
         Apache License, Version 2.0 (the "License"); you may not use this file
         except in compliance with the License. You may obtain a copy of the
-        License at http://www.apache.org/licenses/LICENSE-2.0 Unless required
+        License at http://www.joshcanfield.org/licenses/LICENSE-2.0 Unless required
         by applicable law or agreed to in writing, software distributed under
         the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
         CONDITIONS OF ANY KIND, either express or implied. See the License for
@@ -17,7 +17,7 @@
     <test name="Tapestry Monitoring Library Tests">
         <!--
         <classes>
-            <class name="org.apache.tapestry5.monitor.integration.MonitorTests<methods>
+            <class name="org.joshcanfield.tapestry5.monitor.integration.MonitorTests<methods>
                     <include name="monitor_name_generator"/>
                     <include name="monitor_name_generator_for_extended_interface"/>
                     <include name="monitor_name_second_implementation"/>
