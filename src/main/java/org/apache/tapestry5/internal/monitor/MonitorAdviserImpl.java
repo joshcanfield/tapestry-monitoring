@@ -29,9 +29,13 @@ import org.javasimon.jmx.StopwatchMXBeanFactory;
 import org.slf4j.Logger;
 
 import javax.inject.Named;
+import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 
 /**
  *
@@ -67,8 +71,8 @@ public class MonitorAdviserImpl implements MonitorAdviser {
                 final Monitor monitor = receiver.getMethodAnnotation(method, Monitor.class);
                 if (monitor == null) continue;
                 logger.trace("Monitoring method: {}.{}", owningClass.getSimpleName(), method.getName());
-                final Stopwatch stopwatch = createStopwatch(monitor, owningClass, method);
-                receiver.adviseMethod(method, new MonitorAdvice(stopwatch));
+
+                advise(monitor, owningClass, method, receiver);
             }
         }
     }
@@ -111,21 +115,64 @@ public class MonitorAdviserImpl implements MonitorAdviser {
 
             if (method != null) {
                 logger.trace("Monitoring method: {}.{}", aClass.getSimpleName(), method.getName());
-                final Stopwatch stopwatch = createStopwatch(method.getAnnotation(Monitor.class), aClass, method);
-                monitoredMethod.addAdvice(new MonitorAdvice(stopwatch));
+
+                advise(method.getAnnotation(Monitor.class), aClass, method, monitoredMethod);
             }
         }
     }
 
-    private Stopwatch createStopwatch(Monitor monitor, Class<?> owningClass, Method method) {
+    private void advise(Monitor monitor, Class<?> owningClass, Method method, MethodAdviceReceiver receiver) {
+        MonitorAdvice advice = createAdvice(monitor, owningClass, method);
+
+        receiver.adviseMethod(method, advice);
+    }
+
+    private void advise(Monitor monitor, Class<?> owningClass, Method method, PlasticMethod monitoredMethod) {
+        MonitorAdvice advice = createAdvice(monitor, owningClass, method);
+
+        monitoredMethod.addAdvice(advice);
+    }
+
+    private MonitorAdvice createAdvice(Monitor monitor, Class<?> owningClass, Method method) {
+
         final String name = monitorNameGenerator.getMonitorName(monitor, owningClass, method);
-
-        final ObjectName objectName = monitorNameGenerator.getJmxObjectName(monitor, owningClass, method);
-
         final Stopwatch stopwatch = SimonManager.getStopwatch(name);
+
+        // TODO: Consider making JMX optional, add JSON endpoint
+        final ObjectName objectName = monitorNameGenerator.getJmxObjectName(monitor, owningClass, method);
         mBeanSupport.register(StopwatchMXBeanFactory.create(stopwatch), objectName);
 
-        return stopwatch;
+        // Add exception stopwatch/mxbeans
+
+        HashSet<String> names = new HashSet<String>();
+        for (Monitor.ExceptionFilter exception : monitor.exceptions()) {
+            // This gets appended to the StopWatch name
+            // How does this affect the ObjectName?
+            final String suffix = exception.name();
+            names.add(suffix);
+        }
+
+        Map<String, Stopwatch> exceptionToStopwatchMap = new HashMap<String, Stopwatch>();
+        for (String exceptionName : names) {
+
+            Stopwatch exceptionStopwatch = SimonManager.getStopwatch(name + "." + exceptionName);
+            mBeanSupport.register(StopwatchMXBeanFactory.create(stopwatch), getExceptionObjectName(objectName, exceptionName));
+
+            exceptionToStopwatchMap.put(exceptionName, exceptionStopwatch);
+        }
+
+        MonitorAdvice advice = new MonitorAdvice(stopwatch, monitor, exceptionToStopwatchMap);
+
+
+        return advice;
+    }
+
+    private ObjectName getExceptionObjectName(ObjectName objectName, String s) {
+        try {
+            return new ObjectName(objectName.getCanonicalName() + "," + s);
+        } catch (MalformedObjectNameException e) {
+            throw new RuntimeException(e);
+        }
     }
 
 

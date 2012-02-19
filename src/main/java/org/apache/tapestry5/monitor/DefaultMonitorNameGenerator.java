@@ -8,7 +8,6 @@ import org.apache.tapestry5.ioc.internal.util.TapestryException;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 import java.lang.reflect.Method;
-import java.util.Hashtable;
 
 /**
  * Provide a service override to replace the default behavior.
@@ -51,14 +50,15 @@ public class DefaultMonitorNameGenerator implements MonitorNameGenerator {
      * <p/>
      * Given a method with the signature "org.example.tapestry.pages.Index#onActivate(String, Integer)"
      * Where the apps base package is "org.example.tapestry"
-     * This method creates an object name "org.example.tapestry:name=Index,type=page,method=onActivate(String, Integer)"
+     * This method creates an object name "org.example.tapestry:name=Index,type=page,monitor=onActivate(String, Integer)"
+     * <p/>
+     * If the @Monitor value is set then the "monitor" attribute is replaced with that value.
      *
      * @param method being monitored, or null if transformation is provided.
      * @return the object name
      */
     // @Override - not until Java 6
     public ObjectName getJmxObjectName(Monitor monitor, Class owningClass, Method method) {
-        final Hashtable<String, String> properties = new Hashtable<String, String>();
         StringBuilder builder = new StringBuilder();
         String domain = owningClass.getPackage().getName();
         if (domain.startsWith(appPackage)) {
