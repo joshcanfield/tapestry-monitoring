@@ -169,7 +169,7 @@ public class MonitorAdviserImpl implements MonitorAdviser {
 
     private ObjectName getExceptionObjectName(ObjectName objectName, String s) {
         try {
-            return new ObjectName(objectName.getCanonicalName() + "," + s);
+            return new ObjectName(objectName.getCanonicalName() + ",exception=" + s);
         } catch (MalformedObjectNameException e) {
             throw new RuntimeException(e);
         }
