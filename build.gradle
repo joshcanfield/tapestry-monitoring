@@ -2,30 +2,27 @@ apply plugin: 'base'
 apply plugin: 'java'
 apply plugin: 'idea'
 apply plugin: 'maven'
+apply plugin: 'signing'
 
-description = 'Provides support for performance monitoring.'
+description = 'Tapestry 5 performance monitoring'
 
 defaultTasks 'clean', 'build'
 
 sourceCompatibility = JavaVersion.VERSION_1_6
 
-version = '1.0.1'
-group = 'com.joshcanfield.tapestry'
+group = 'com.joshcanfield'
+version = '1.0.1-SNAPSHOT'
+isReleaseVersion = !version.endsWith("SNAPSHOT")
 
-jar.baseName = 'tapestry-monitor'
+
+jar.baseName = 'tapestry-monitoring'
+
+repositories {
+    mavenCentral();
+}
 
 tapestryVersion = '5.3.2'
 javaSimonVersion = '3.0.0'
-
-
-task packageSources(type: Jar) {
-    from sourceSets.main.allSource
-    classifier = 'sources'
-}
-
-artifacts {
-    archives packageSources
-}
 
 dependencies {
 
@@ -45,12 +42,84 @@ dependencies {
             "org.apache.tapestry:tapestry-test:$tapestryVersion"
 }
 
-repositories {
-    mavenCentral();
-    maven {
-        url "https://repository.apache.org/content/repositories/staging/"
+
+task sourcesJar(type: Jar) {
+    from sourceSets.main.allSource
+    classifier = 'sources'
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}
+
+artifacts {
+    archives sourcesJar
+    archives javadocJar
+}
+
+signing {
+    required { isReleaseVersion && gradle.taskGraph.hasTask("uploadArchives") }
+
+    sign configurations.archives
+}
+
+defaultProject = {
+    name 'Tapestry Monitoring'
+    description 'Tapestry Monitoring provides performance monitoring for Tapestry5 services.'
+    url 'https://github.com/joshcanfield/tapestry-monitoring'
+
+    scm {
+        url 'git@github.com:joshcanfield/tapestry-monitoring.git'
+        connection 'scm:git@github.com:joshcanfield/tapestry-monitoring.git'
+        developerConnection 'scm:git@github.com:joshcanfield/tapestry-monitoring.git'
+    }
+
+    licenses {
+        license {
+            name 'The Apache Software License, Version 2.0'
+            url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+            distribution 'repo'
+        }
+    }
+
+    developers {
+        developer {
+            id 'joshcanfield'
+            name 'Josh Canfield'
+            email 'joshcanfield@gmail.com'
+        }
     }
 }
+
+uploadArchives.repositories.mavenDeployer {
+    uniqueVersion = false
+
+    if (!project.hasProperty('sonatypeUsername')) sonatypeUsername = ''
+    if (!project.hasProperty('sonatypePassword')) sonatypePassword = ''
+
+    snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
+        authentication(userName: sonatypeUsername, password: sonatypePassword)
+    }
+
+    repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
+        authentication(userName: sonatypeUsername, password: sonatypePassword)
+    }
+}
+
+installer = install.repositories.mavenInstaller
+deployer = uploadArchives.repositories.mavenDeployer
+
+[installer, deployer]*.pom {
+    project defaultProject
+    withXml {
+        def project = it.asNode()
+        project.version[0] + {
+            packaging 'jar'
+        }
+    }
+}
+
 
 test {
     useTestNG()
