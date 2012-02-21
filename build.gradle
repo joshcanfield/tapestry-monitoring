@@ -2,69 +2,143 @@ apply plugin: 'base'
 apply plugin: 'java'
 apply plugin: 'idea'
 apply plugin: 'maven'
+apply plugin: 'signing'
 
-description = 'Provides support for performance monitoring.'
+description = 'Tapestry 5 performance monitoring'
+
 defaultTasks 'clean', 'build'
+
 sourceCompatibility = JavaVersion.VERSION_1_6
-version = '5.3.0-SNAPSHOT'
-group = 'org.apache.tapestry'
-jar.baseName = 'tapestry-monitor'
 
-tapestryVersion = '5.3.1'
+group = 'com.joshcanfield'
+version = '1.0.1'
+isReleaseVersion = !version.endsWith("SNAPSHOT")
+
+
+jar.baseName = 'tapestry-monitoring'
+
+repositories {
+    mavenCentral();
+}
+
+tapestryVersion = '5.3.2'
 javaSimonVersion = '3.0.0'
-
-ideaProject {
-  // Not sure why this is required, it's supposed to inherit from sourceCompatibility but doesn't seem to.
-  javaVersion = 1.6
-  beforeConfigured { project ->
-    project.modulePaths.clear()
-  }
-}
-
-ideaModule {
-  beforeConfigured { module ->
-    module.dependencies.clear()
-  }
-}
-
-task packageSources(type: Jar) {
-  from sourceSets.main.allSource
-  classifier = 'sources'
-}
-
-artifacts {
-  archives packageSources
-}
 
 dependencies {
 
-  compile 'javax.servlet:servlet-api:2.5'
+    compile 'javax.servlet:servlet-api:2.5'
 
-  compile "org.apache.tapestry:tapestry-core:$tapestryVersion"
+    compile "org.apache.tapestry:tapestry-core:$tapestryVersion"
 
-  compile "org.javasimon:javasimon-core:$javaSimonVersion"
+    compile "org.javasimon:javasimon-core:$javaSimonVersion"
 
-  compile "org.apache.tapestry:tapestry-jmx:$tapestryVersion"
+    compile "org.apache.tapestry:tapestry-jmx:$tapestryVersion"
 
-  compile 'org.slf4j:slf4j-api:1.6.1',
-          'org.slf4j:log4j-over-slf4j:1.6.1'
+    compile 'org.slf4j:slf4j-api:1.6.1'
 
-  testCompile 'org.testng:testng:5.12.1',
-          'org.easymock:easymock:2.5.2',
-          'org.jboss.resteasy:tjws:2.0-beta-2',
-          "org.apache.tapestry:tapestry-test:$tapestryVersion"
+    testCompile 'org.testng:testng:5.12.1',
+            'org.easymock:easymock:2.5.2',
+            'org.jboss.resteasy:tjws:2.0-beta-2',
+            "org.apache.tapestry:tapestry-test:$tapestryVersion"
 }
 
-repositories {
-  mavenCentral();
-  mavenRepo name: 'apache-staging',
-                  urls: "https://repository.apache.org/content/repositories/staging/"
-  mavenRepo name: 'jboss',
-          urls: "https://repository.jboss.org/nexus/content/groups/public-jboss"
-  mavenRepo name: 'java.net',
-          urls: "http://download.java.net/maven/2"
+
+task sourcesJar(type: Jar) {
+    from sourceSets.main.allSource
+    classifier = 'sources'
 }
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}
+
+artifacts {
+    archives sourcesJar
+    archives javadocJar
+}
+
+signing {
+    required { isReleaseVersion && gradle.taskGraph.hasTask("uploadArchives") }
+
+    sign configurations.archives
+}
+
+defaultProject = {
+    name 'Tapestry Monitoring'
+    description 'Tapestry Monitoring provides performance monitoring for Tapestry5 services.'
+    url 'https://github.com/joshcanfield/tapestry-monitoring'
+
+    scm {
+        url 'git@github.com:joshcanfield/tapestry-monitoring.git'
+        connection 'scm:git@github.com:joshcanfield/tapestry-monitoring.git'
+        developerConnection 'scm:git@github.com:joshcanfield/tapestry-monitoring.git'
+    }
+
+    licenses {
+        license {
+            name 'The Apache Software License, Version 2.0'
+            url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+            distribution 'repo'
+        }
+    }
+
+    developers {
+        developer {
+            id 'joshcanfield'
+            name 'Josh Canfield'
+            email 'joshcanfield@gmail.com'
+        }
+    }
+}
+
+uploadArchives.repositories.mavenDeployer {
+    uniqueVersion = false
+
+    if (!project.hasProperty('sonatypeUsername')) sonatypeUsername = ''
+    if (!project.hasProperty('sonatypePassword')) sonatypePassword = ''
+
+    snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
+        authentication(userName: sonatypeUsername, password: sonatypePassword)
+    }
+
+    repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
+        authentication(userName: sonatypeUsername, password: sonatypePassword)
+    }
+}
+
+installer = install.repositories.mavenInstaller
+deployer = uploadArchives.repositories.mavenDeployer
+
+[installer, deployer]*.pom {
+    project defaultProject
+    withXml {
+        def project = it.asNode()
+        project.version[0] + {
+            packaging 'jar'
+        }
+    }
+}
+
 
 test {
-  useTestNG()
+    useTestNG()
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '1.0-milestone-8'
+    jarFile = 'wrapper/wrapper.jar'
+}
+
+idea {
+    module.iml {
+        beforeMerged { module ->
+            module.dependencies.clear()
+        }
+    }
+    project.ipr {
+        beforeMerged { project ->
+            project.modulePaths.clear()
+        }
+    }
 }
