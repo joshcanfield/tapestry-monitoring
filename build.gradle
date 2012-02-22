@@ -105,6 +105,8 @@ uploadArchives.repositories.mavenDeployer {
     repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
         authentication(userName: sonatypeUsername, password: sonatypePassword)
     }
+
+    beforeDeployment { deployment -> signing.signPom(deployment) }
 }
 
 installer = install.repositories.mavenInstaller
