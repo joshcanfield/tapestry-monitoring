@@ -4,8 +4,6 @@ apply plugin: 'idea'
 apply plugin: 'maven'
 apply plugin: 'signing'
 
-description = 'Tapestry 5 performance monitoring'
-
 defaultTasks 'clean', 'build'
 
 sourceCompatibility = JavaVersion.VERSION_1_6
