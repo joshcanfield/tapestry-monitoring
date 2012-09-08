@@ -54,7 +54,7 @@ public class MonitorTests extends Assert {
     @BeforeMethod
     public void resetSimon() {
         // Each test assumes we're starting at zero
-        Collection<String> strings = SimonManager.simonNames();
+        Collection<String> strings = SimonManager.getSimonNames();
         for (String string : strings) {
             SimonManager.getSimon(string).reset();
         }
@@ -116,13 +116,13 @@ public class MonitorTests extends Assert {
     public void monitor_not_profiled_service_methods() throws NoSuchMethodException {
         // make sure the page is rendered once so that all the services are loaded and monitoring is created
         tester.renderPage("index");
-        assertTrue(SimonManager.simonNames().size() > 0);
+        assertTrue(SimonManager.getSimonNames().size() > 0);
 
         // Methods without the monitor annotation should not be monitored
         final Method method = HelloService.class.getMethod("notMonitoredMethod");
         Monitor monitor = method.getAnnotation(Monitor.class);
         String monitorName = monitorNameGenerator.getMonitorName(monitor, HelloService.class, method);
-        assertFalse(SimonManager.simonNames().contains(monitorName));
+        assertFalse(SimonManager.getSimonNames().contains(monitorName));
 
     }
 
