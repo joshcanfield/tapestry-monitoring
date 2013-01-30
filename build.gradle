@@ -11,7 +11,7 @@ defaultTasks 'clean', 'build'
 sourceCompatibility = JavaVersion.VERSION_1_6
 
 group = 'com.joshcanfield'
-version = '1.0.1'
+version = '1.1.0'
 isReleaseVersion = !version.endsWith("SNAPSHOT")
 
 
@@ -21,8 +21,8 @@ repositories {
     mavenCentral();
 }
 
-tapestryVersion = '5.3.2'
-javaSimonVersion = '3.0.0'
+tapestryVersion = '5.3.5'
+javaSimonVersion = '3.2.1'
 
 dependencies {
 
@@ -142,5 +142,11 @@ idea {
         beforeMerged { project ->
             project.modulePaths.clear()
         }
+    }
+}
+
+jar {
+    manifest {
+        attributes 'Tapestry-Module-Classes': 'com.joshcanfield.tapestry5.monitor.MonitorModule'
     }
 }
